@@ -13,23 +13,17 @@ You will need:
 * Microphone (http://www.amazon.com/gp/product/B00M3UJ42A)
 * SenseHAT (http://www.amazon.com/gp/product/B014HDG74S)
 
-![sensehatavs](https://cloud.githubusercontent.com/assets/712006/13404661/c24b9cb0-dee8-11e5-8966-3923d479a966.JPG)
+[![sensehatavs](https://cloud.githubusercontent.com/assets/712006/13404661/c24b9cb0-dee8-11e5-8966-3923d479a966.JPG))](https://www.youtube.com/watch?v=THkzJNhhscg)
 
 ### AVS Setup
 
 Before you get started with the hardware, you will need to create device ID and keys necessary to provision and use AVS from the Raspberry Pi.
-* Go to https://developer.amazon.com/edw/ and login using your amazon.com credentials.
-* Once logged in, go to Alexa Voice Service (https://developer.amazon.com/edw/home.html#/avs/list)
-* Register a Product type using the following information, for example:
-** Company name: (you github handle)
-** Device Type ID: AlexaPi
-** Display Name: AlexaPi
-* Create a New Security Profile and add the following web settings:
-** Allowed origins: add http://IP:5000 where IP is the address used to access the provisioning service running on the Raspberry Pi.
-** Return URL: add http://IP:5000/code where IP is the address used to access the provisioning service running on the Raspberry Pi.
+1. Go to https://developer.amazon.com/edw/ and login using your amazon.com credentials.
+2. Once logged in, go to Alexa Voice Service (https://developer.amazon.com/edw/home.html#/avs/list)
+3. Register a Product type using the following information, for example: Company name: (your github handle), Device Type ID: AlexaPi, Display Name: AlexaPi
+4. Create a New Security Profile and add the following web settings: Allowed origins: add http://IP:5000 where IP is the address used to access the provisioning service running on the Raspberry Pi. Return URL: add http://IP:5000/code where IP is the address used to access the provisioning service running on the Raspberry Pi.
 Make a note of these credentials you will be asked for them during the install process
-* Add Device details.
-
+5. Add Device details.
 
 ### Installation
 
@@ -49,8 +43,8 @@ The auth token is generated from the request_token the auth_token is then stored
 
 ### Usage
 * Pi will use the accelerometer to trigger the recording so it is important to boot it while it is flat on the desk.
-* After booting, wait for "Hello" welcome message and scrolling message "Rasie to Speak"
-* Raise the Pi (pointing the USB ports up); this will start the recording and turn the LED to cyan
+* After booting, wait for "Hello" welcome message and scrolling message "Raise to Speak"
+* Raise the Pi (pointing the USB ports up) to speak; this will start the recording and turn the LED to cyan.
 * Lower the Pi (flat) to stop the recording and send the audio to AVS; this will turn the LED to blue. If message is understood, AVS device will play the speech output. While it is playing, LED turns green. If message is not understood or if there was an error reaching AVS, LED will blink red three times and
 
 ### Issues/Bugs etc.
@@ -61,12 +55,3 @@ If the error is complaining about alsaaudio you may need to check the name of yo
 The device name can be set in the settings at the top of main.py
 You may need to adjust the volume and/or input gain for the microphone, you can do this with
 `alsamixer`
-
-
-
-
-
-
-
-
----
