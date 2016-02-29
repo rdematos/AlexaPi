@@ -13,6 +13,8 @@ You will need:
 * Microphone (http://www.amazon.com/gp/product/B00M3UJ42A)
 * SenseHAT (http://www.amazon.com/gp/product/B014HDG74S)
 
+![sensehatavs](https://cloud.githubusercontent.com/assets/712006/13404661/c24b9cb0-dee8-11e5-8966-3923d479a966.JPG)
+
 ### AVS Setup
 
 Before you get started with the hardware, you will need to create device ID and keys necessary to provision and use AVS from the Raspberry Pi.
