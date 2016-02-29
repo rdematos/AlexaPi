@@ -1,72 +1,64 @@
-# AlexaPi
- 
+# AlexaPi with SenseHAT
+
 ---
- 
-### Contributors
- 
-* Sam Machin
- 
----
- 
-This is the code needed to Turn a Raspberry Pi into a client for Amazon's Alexa service, I have developed this against the Pi 2 but I see no reason it shouldn't run on the other models. Feedback welcome.
----
- 
-### Requirements
+
+This turns a Raspberry Pi and SenseHAT into an Alexa Voice Service (AVS) device (endpoint). Using SenseHAT, the device supports "raise to speak" and uses the builtin 8x8 LED for feedback for recording, processing, and speaking. It is based on Sam Machin AlexaPi with modifications to support SenseHAT.
+
+### Hardware Requirements
 
 You will need:
-* A Raspberry Pi
-* An SD Card with a fresh install of Raspbian (tested against build 2015-11-21 Jessie)
-* An External Speaker with 3.5mm Jack
-* A USB Sound Dongle and Microphone
-* A push to make button connected between GPIO 18 and GND
-* (Optionally) A Dual colour LED (or 2 signle LEDs) Connected to GPIO 24 & 25
+* Raspberry Pi and wifi dongle.
+* SD Card with a fresh install of Raspbian (https://www.raspberrypi.org/downloads/raspbian/) tested against build 2015-11-21 Jessie.
+* External speaker with 3.5mm Jack (http://www.amazon.com/gp/product/B001UEBN42)
+* Microphone (http://www.amazon.com/gp/product/B00M3UJ42A)
+* SenseHAT (http://www.amazon.com/gp/product/B014HDG74S)
 
+### AVS Setup
 
-Next you need to obtain a set of credentials from Amazon to use the Alexa Voice service, login at http://developer.amazon.com and Goto Alexa then Alexa Voice Service
-You need to create a new product type as a Device, for the ID use something like AlexaPi, create a new security profile and under the web settings allowed origins put http://localhost:5000 and as a return URL put http://localhost:5000/code you can also create URLs replacing localhost with the IP of your Pi  eg http://192.168.1.123:5000
+Before you get started with the hardware, you will need to create device ID and keys necessary to provision and use AVS from the Raspberry Pi.
+* Go to https://developer.amazon.com/edw/ and login using your amazon.com credentials.
+* Once logged in, go to Alexa Voice Service (https://developer.amazon.com/edw/home.html#/avs/list)
+* Register a Product type using the following information, for example:
+** Company name: (you github handle)
+** Device Type ID: AlexaPi
+** Display Name: AlexaPi
+* Create a New Security Profile and add the following web settings:
+** Allowed origins: add http://IP:5000 where IP is the address used to access the provisioning service running on the Raspberry Pi.
+** Return URL: add http://IP:5000/code where IP is the address used to access the provisioning service running on the Raspberry Pi.
 Make a note of these credentials you will be asked for them during the install process
+* Add Device details.
+
 
 ### Installation
 
-Boot your fresh Pi and login to a command prompt as root.
-
-Make sure you are in /root
-
+Switch to root user
+`sudo su`
 Clone this repo to the Pi
-`git clone https://github.com/sammachin/AlexaPi.git`
-Run the setup script
+`git clone https://github.com/rdematos/AlexaPi.git`
+Run the setup script and follow its instructions.  Note that script prompts for the information from the AVS Setup and populates creds.py
 `./setup.sh`
 
-Follow instructions....
+### Provisioning
+Once, setup is complete you will need to provision the device for AVS. This is done by launching a provisioning service auth_web.py which accesses Login with Amazon via oAuth and returns a token for this device. This step is only needed once to retrieve the initial token. To provision:  
+* run auth_web.py
+* open a web browser to http://IP:5000 where IP is the address used to access the provisioning service running on the Raspberry Pi
+* Login with the amazon.com account used in AVS setup; once successfully logged in, page will redirect to return URL http://IP:5000/code which displays and writes the request_token to creds.py
+The auth token is generated from the request_token the auth_token is then stored in a local memcache with and expiry of just under an hour to align with the validity at Amazon, if the function fails to get an access_token from memcache it will then request a new one from Amazon using the request_token
 
-Enjoy :)
+### Usage
+* Pi will use the accelerometer to trigger the recording so it is important to boot it while it is flat on the desk.
+* After booting, wait for "Hello" welcome message and scrolling message "Rasie to Speak"
+* Raise the Pi (pointing the USB ports up); this will start the recording and turn the LED to cyan
+* Lower the Pi (flat) to stop the recording and send the audio to AVS; this will turn the LED to blue. If message is understood, AVS device will play the speech output. While it is playing, LED turns green. If message is not understood or if there was an error reaching AVS, LED will blink red three times and
 
 ### Issues/Bugs etc.
 
-If your alexa isn't running on startup you can check /var/log/alexa.log for errrors.
-
-If the error is complaining about alsaaudio you may need to check the name of your soundcard input device, use 
-`arecord -L` 
-The device name can be set in the settings at the top of main.py 
-
-You may need to adjust the volume and/or input gain for the microphone, you can do this with 
+Errors are logged to /var/log/alexa.log
+If the error is complaining about alsaaudio you may need to check the name of your soundcard input device, use
+`arecord -L`
+The device name can be set in the settings at the top of main.py
+You may need to adjust the volume and/or input gain for the microphone, you can do this with
 `alsamixer`
-
-### Advanced Install
-
-For those of you that prefer to install the code manually or tweak things here's a few pointers...
-
-The Amazon AVS credentials are stored in a file called creds.py which is used by auth_web.py and main.py, there is an example with blank values.
-
-The auth_web.py is a simple web server to generate the refresh token via oAuth to the amazon users account, it then appends this to creds.py and displays it on the browser.
-
-main.py is the 'main' alexa client it simply runs on a while True loop waiting for the button to be pressed, it then records audio and when the button is released it posts this to the AVS service using the requests library, When the response comes back it is played back using mpg123 via an os system call, The 1sec.mp3 file is a 1second silent MP3) I found that my soundcard/pi was clipping the beginning of audio files and i was missing the first bit of the response so this is there to pad the audio.
-
-The LED's are a visual indictor of status, I used a duel Red/Green LED but you could also use separate LEDS, Red is connected to GPIO 24 and green to GPIO 25, When recording the RED LED will be lit when the file is being posted and waiting for the response both LED's are lit (or in the case of a dual R?G LED it goes Yellow) and when the response is played only the Green LED is lit. If The client gets an error back from AVS then the Red LED will flash 3 times.
-
-The internet_on() routine is testing the connection to the Amazon auth server as I found that running the script on boot it was failing due to the network not being fully established so this will keep it retrying until it can make contact before getting the auth token.
-
-The auth token is generated from the request_token the auth_token is then stored in a local memcache with and expiry of just under an hour to align with the validity at Amazon, if the function fails to get an access_token from memcache it will then request a new one from Amazon using the refresh token.
 
 
 
@@ -76,5 +68,3 @@ The auth token is generated from the request_token the auth_token is then stored
 
 
 ---
- 
-
